@@ -1,6 +1,6 @@
 #!/bin/ash
 ##############################################################################
-# APK Fastest Mirror 0.9.1 - A Pure BusyBox APK mirror selector
+# APK Fastest Mirror 0.9.2 - A Pure BusyBox APK mirror selector
 # MIT License (See: https://github.com/padthaitofuhot/apkfastestmirror)
 #
 # Usage
