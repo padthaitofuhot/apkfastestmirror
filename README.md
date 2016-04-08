@@ -1,11 +1,11 @@
 # APK Fastest Mirror
-*A Pure BusyBox APK mirror selector*
+*A Pure BusyBox APK mirror selector for Alpine Linux*
 
 MIT License (See: https://github.com/padthaitofuhot/apkfastestmirror)
 
 ## Installation
-```
-alpine:~# wget
+```text
+alpine:~# wget https://raw.githubusercontent.com/padthaitofuhot/apkfastestmirror/master/apkfastestmirror.sh
 alpine:~# ash ./apkfastestmirror.sh --install
 Installing to /usr/local/bin/apkfastestmirror
 Generating /etc/apk/apkfastestmirror.conf

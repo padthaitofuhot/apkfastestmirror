@@ -1,6 +1,6 @@
 #!/bin/ash
 ##############################################################################
-# APK Fastest Mirror - A Pure BusyBox APK mirror selector
+# APK Fastest Mirror 0.9.1 - A Pure BusyBox APK mirror selector
 # MIT License (See: https://github.com/padthaitofuhot/apkfastestmirror)
 #
 # Usage
@@ -121,7 +121,8 @@ while true; do
         ;;
     --install)
             echo "Installing to /usr/local/bin/apkfastestmirror"
-            install -o root -g root -m 755 -cD -p "${0}" /usr/local/bin/apkfastestmirror
+            install -o root -g root -m 755 -cD -p "${0}" /usr/local/bin/apkfastestmirror || exit 1
+            $0 --genconf
             exit $?
         ;;
     -r|--replace)
