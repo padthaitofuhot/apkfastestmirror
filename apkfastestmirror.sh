@@ -122,7 +122,7 @@ while true; do
     --install)
             echo "Installing to /usr/local/bin/apkfastestmirror"
             install -o root -g root -m 755 -cD -p "${0}" /usr/local/bin/apkfastestmirror || exit 1
-            $0 --genconf
+            ash $0 --genconf
             exit $?
         ;;
     -r|--replace)
