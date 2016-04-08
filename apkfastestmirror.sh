@@ -1,6 +1,6 @@
 #!/bin/ash
 ##############################################################################
-# APK Fastest Mirror 0.9.2 - A Pure BusyBox APK mirror selector
+# APK Fastest Mirror 0.9.2 - A Pure BusyBox APK mirror selector for Alpine
 # MIT License (See: https://github.com/padthaitofuhot/apkfastestmirror)
 #
 # Usage
@@ -320,5 +320,6 @@ $verbose && echo "OK: ${2} (metric ${1})"
 $replace_apk_repositories && $update_indexes_after_replace && $verbose && apk update
 $replace_apk_repositories && $update_indexes_after_replace && ! $verbose && apk -q update
 
+exit 0
 # refs:
 # http://wiki.alpinelinux.org/wiki/Awk
