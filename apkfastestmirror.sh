@@ -1,13 +1,17 @@
 #!/bin/ash
 ##############################################################################
-# APK Fastest Mirror 0.9.2 - A Pure BusyBox APK mirror selector for Alpine
+# APK Fastest Mirror 0.9.4 - A Pure BusyBox APK mirror selector for Alpine
 # MIT License (See: https://github.com/padthaitofuhot/apkfastestmirror)
 #
 # Usage
 # -h, --help        Show usage and exit
-# -q, --quiet       Be quiet
-# -v, --verbose     Be verbose (default)
+# -q, --quiet       Be quiet - only print results
+#     --shut-up     Be more quiet - print nothing
+# -v, --verbose     Be verbose - print progress (default)
+#     --http-only   Only use HTTP checks to determine mirror performance
+#     --icmp-only   Only use ICMP checks to determine mirror performance
 # -s, --samples <n> Test performance n times before selecting mirror
+#                       the default is two samples.
 # -r, --replace     Replace /etc/apk/repositories with fastest mirror
 # -u, --update      Update APK indexes (default, useful with --replace)
 #     --genconf     Create /etc/apk/fastestmirror.conf if it does not
@@ -25,14 +29,17 @@
 #
 # The contents of /etc/apk/repositories will be replaced whenever this script
 # runs if replace_apk_repositories is 'true'.
-replace_apk_repositories=false
+replace_apk_repositories=true
 #
 # Run `apk update` if replace_apk_repositories=true or given the --replace
 # argument at runtime.
-update_indexes_after_replace=true
+update_indexes_after_replace=false
 #
 # Get a progress bar :)
 verbose=true
+#
+# Show the results
+show_results=false
 #
 ### Mirror Variables
 #
@@ -52,11 +59,15 @@ http://nl.alpinelinux.org/alpine/
 #
 ### Measurement Variables
 #
+# Got firewall problems? Maybe these can help.
+icmp_only=false
+http_only=false
+#
 # Number of times to perform sampling before returning results
 sampling_rounds=2
 #
 # Number of times to ICMP ping each mirror host
-icmp_count=5
+icmp_count=6
 #
 # Timeout in seconds when waiting for a mirror list (MIRRORS.txt) HTTP source
 # to respond before ignoring it for the current run
@@ -84,7 +95,7 @@ usage() {
 
 if ! O=$(
          getopt \
-         -l verbose,genconf,install,replace,update,help,quiet,samples: \
+         -l verbose,genconf,install,replace,update,help,quiet,samples:,shut-up,http-only,icmp-only \
          -o vuhqrs: \
          -n "${0}" \
          -- ${@}
@@ -102,6 +113,12 @@ while true; do
         ;;
     -q|--quiet)
         verbose=false
+        show_results=true
+        shift
+        ;;
+       --shut-up)
+        verbose=false
+        show_results=false
         shift
         ;;
     --genconf)
@@ -136,6 +153,14 @@ while true; do
     -s|--samples)
         sampling_rounds="${2}"
         shift 2
+        ;;
+    --icmp-only)
+        icmp_only=true
+        shift
+        ;;
+    --http-only)
+        http_only=true
+        shift
         ;;
     --)
         shift
@@ -181,7 +206,8 @@ $(
 # in decimal seconds.
 parallel_http_ping() {
     url=$1
-    if fetchtime="$(
+
+    if $icmp_only || fetchtime="$(
                     time \
                     wget -O/dev/null -q \
                         -Y ${http_use_proxy} \
@@ -191,7 +217,7 @@ parallel_http_ping() {
                   )";
 
     then
-
+        $icmp_only && fetchtime=1
         echo -e "${url}\n${fetchtime}" | awk '
             /^http/ {
                 split($1, urlparts, "/")
@@ -208,6 +234,7 @@ parallel_http_ping() {
         $verbose && 1>&2 echo -n "."
         return 1
     fi
+
 }
 
 # Pings the mirror a few times and calculates a weighted
@@ -241,7 +268,13 @@ parallel_icmp_ping() {
     read -r -t 1 url
     read -r -t 1 host
     read -r -t 1 fetchtime
-    if ping -q -c "${icmp_count}" -W 1 -w "${icmp_count}" "${host}" 2>/dev/null \
+
+    if (
+         ( $http_only \
+           && echo -e "packet loss 0 0 0 0 0\nround-trip 0 0 0/0/1\n"
+         ) \
+         ||  ping -q -c "${icmp_count}" -W 1 -w "${icmp_count}" "${host}" 2>/dev/null \
+       ) \
        | awk -v url="${url}" \
              -v host="${host}" \
              -v fetchtime="${fetchtime}" '
@@ -283,7 +316,7 @@ for round in $(seq 1 "${sampling_rounds}"); do
     done
     wait
 
-    sort -n -t ' ' -k 1 "${reachable}" | head -1 >>"${winners}"
+    grep -v '^0  $' "${reachable}" | sort -n -t ' ' -k 1 | head -1 >>"${winners}"
 
     rm -f "${reachable}"
 
@@ -294,12 +327,17 @@ done
 set -- $(sort -n -t ' ' -k 1 "${winners}" | head -1)
 rm -f "${winners}"
 
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    $verbose && echo "ERR: No hosts could be reached, not touching /etc/apk/repositories"
+    exit 1
+fi
+
 # Spam to terminal and (if enabled) update the APK repo file
 output_results() {
     $replace_apk_repositories && new_repositories="$(mktemp)"
     while read -r line; do
         $replace_apk_repositories && echo "${line}" >>"${new_repositories}"
-        echo "${line}"
+        $show_results && echo "${line}"
     done
     $replace_apk_repositories && mv -f "${new_repositories}" /etc/apk/repositories
 }
@@ -321,5 +359,6 @@ $replace_apk_repositories && $update_indexes_after_replace && $verbose && apk up
 $replace_apk_repositories && $update_indexes_after_replace && ! $verbose && apk -q update
 
 exit 0
+
 # refs:
 # http://wiki.alpinelinux.org/wiki/Awk
