@@ -14,14 +14,20 @@ alpine:~#
 
 ## Usage
 ```text
+Usage
 -h, --help        Show usage and exit
--q, --quiet       Be quiet
--v, --verbose     Be verbose (default)
+-q, --quiet       Be quiet - only print results
+    --shut-up     Be more quiet - print nothing
+-v, --verbose     Be verbose - print progress (default)
+    --http-only   Only use HTTP checks to determine mirror performance
+    --icmp-only   Only use ICMP checks to determine mirror performance
 -s, --samples <n> Test performance n times before selecting mirror
+                      the default is two samples.
 -r, --replace     Replace /etc/apk/repositories with fastest mirror
 -u, --update      Update APK indexes (default, useful with --replace)
-    --genconf     Create /etc/apk/fastestmirror.conf if it does not already exist and exit
-    --install     Install as /usr/local/bin/apkfastestmirror, --genconf, and exit
+    --genconf     Create /etc/apk/fastestmirror.conf if it does not
+                  already exist and exit
+    --install     Install as /usr/local/bin/apkfastestmirror and exit
 ```
 
 ## Configuration
@@ -31,9 +37,11 @@ All variables that can be set in the script header can also be set in the config
 
 | Variable  | Default | Description
 | :--- | :---: | :--- |
-| `replace_apk_repositories` | false | Replace /etc/apk/repositories with output |
-| `update_indexes_after_replace` | true | (with `--replace`) Also update APK indexes |
+| `replace_apk_repositories` | true | Replace /etc/apk/repositories with output |
+| `update_indexes_after_replace` | false | (with `--replace`) Also update APK indexes |
 | `verbose` | true | Be verbose (and get a progress bar) |
+| `quiet` | false | Be quiet - only print results |
+| `shut_up` | false | Be more quiet - print nothing |
 
 ##### Mirror Variables
 
@@ -47,6 +55,8 @@ All variables that can be set in the script header can also be set in the config
 
 | Variable  | Default | Description
 | :--- | :---: | :--- |
+| `http_only` | false | Got firewall problems? Maybe these can help. |
+| `icmp_only` | false | |
 | `sampling_rounds` | 2 | Sampling rounds before selecting mirror
 | `icmp_count` | 6 | Number of ICMP pings to send |
 | `http_timeout` | 1 | HTTP timeout in seconds (useful on laggy links)
