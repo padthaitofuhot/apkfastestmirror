@@ -44,17 +44,36 @@ show_results=false
 ### Mirror Variables
 #
 # Your local HTTP mirrors
-mirrors_local=""
-#
-# Unlisted HTTP mirrors to query
-mirrors_unlisted="
-http://alpine.gliderlabs.com/alpine/
-http://dl-cdn.alpinelinux.org/alpine/
-"
+mirrors_custom=""
 #
 # At least one published mirror that should generally be reachable
 mirrors_published="
+http://dl-cdn.alpinelinux.org/alpine/
 http://nl.alpinelinux.org/alpine/
+http://uk.alpinelinux.org/alpine/
+http://dl-2.alpinelinux.org/alpine/
+http://dl-3.alpinelinux.org/alpine/
+http://dl-4.alpinelinux.org/alpine/
+http://dl-5.alpinelinux.org/alpine/
+http://dl-8.alpinelinux.org/alpine/
+http://mirror.yandex.ru/mirrors/alpine/
+http://mirrors.gigenet.com/alpinelinux/
+http://mirror1.hs-esslingen.de/pub/Mirrors/alpine/
+http://mirror.leaseweb.com/alpine/
+http://repository.fit.cvut.cz/mirrors/alpine/
+http://alpine.mirror.far.fi/
+http://alpine.mirror.wearetriple.com/
+http://mirror.clarkson.edu/alpine/
+http://linorg.usp.br/AlpineLinux/
+http://ftp.yzu.edu.tw/Linux/alpine/
+http://mirror.aarnet.edu.au/pub/alpine
+http://mirror.csclub.uwaterloo.ca/alpine
+http://ftp.acc.umu.se/mirror/alpinelinux.org
+http://ftp.halifax.rwth-aachen.de/alpine
+http://speglar.siminn.is/alpine
+http://mirrors.dotsrc.org/alpine
+http://ftp.tsukuba.wide.ad.jp/Linux/alpine
+http://mirror.rise.ph/alpine
 "
 #
 ### Measurement Variables
@@ -178,7 +197,7 @@ done
 # Assemble list of MIRRORS.txt HTTP sources
 mirrorlist_sources="
 $(
-    for mirror in ${mirrors_local} ${mirrors_unlisted} ${mirrors_published}; do \
+    for mirror in ${mirrors_custom} ${mirrors_published}; do \
         echo ${mirror}/MIRRORS.txt; \
     done
  )
