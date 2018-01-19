@@ -47,8 +47,7 @@ All variables that can be set in the script header can also be set in the config
 
 | Variable  | Default | Description
 | :--- | :---: | :--- |
-| `mirrors_local` | *-* | Your local HTTP mirrors |
-| `mirrors_unlisted` | *see script* | Unlisted HTTP mirrors to query
+| `mirrors_custom` | *-* | Your custom HTTP mirrors, perhaps local mirrors |
 | `mirrors_published` | *see script* | Published mirrors that are usually available
 
 ##### Measurement Variables
