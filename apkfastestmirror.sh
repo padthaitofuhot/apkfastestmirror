@@ -38,6 +38,9 @@ update_indexes_after_replace=false
 # Get a progress bar :)
 verbose=true
 #
+# Wizard mode
+debug=false
+#
 # Show the results
 show_results=false
 #
@@ -73,7 +76,7 @@ http://ftp.halifax.rwth-aachen.de/alpine
 http://speglar.siminn.is/alpine
 http://mirrors.dotsrc.org/alpine
 http://ftp.tsukuba.wide.ad.jp/Linux/alpine
-http://mirror.rise.ph/alpine
+http://mirror.rise.ph/alpine/
 "
 #
 ### Measurement Variables
@@ -114,8 +117,8 @@ usage() {
 
 if ! O=$(
          getopt \
-         -l verbose,genconf,install,replace,update,help,quiet,samples:,shut-up,http-only,icmp-only \
-         -o vuhqrs: \
+         -l verbose,debug,quiet,shut-up,genconf,install,replace,update,help,samples:,http-only,icmp-only \
+         -o vdquhrs: \
          -n "${0}" \
          -- ${@}
         ); then
@@ -128,8 +131,15 @@ while true; do
     case "$1" in
     -v|--verbose)
         verbose=true
+	show_results=false
         shift
         ;;
+    -d|--debug)
+	debug=true
+	verbose=true
+	show_results=true
+	shift
+	;;
     -q|--quiet)
         verbose=false
         show_results=true
@@ -203,14 +213,19 @@ $(
  )
 "
 
+parallel_mirrorlist_fetch() {
+    for source in ${mirrorlist_sources}; do
+        wget -O- -q -Y ${http_use_proxy} -T ${http_timeout} ${source} &
+    done
+    wait
+}
+
 # Fetch mirrorlists from sources
 $verbose && echo "Fetching mirror lists"
 mirrorlist="
 ${mirrors_custom}
 $(
-    for source in ${mirrorlist_sources}; do \
-        wget -O- -q -Y ${http_use_proxy} -T ${http_timeout} ${source}; \
-    done \
+    parallel_mirrorlist_fetch \
     | sort \
     | uniq \
     | sed '/^$/d'
@@ -330,17 +345,20 @@ for round in $(seq 1 "${sampling_rounds}"); do
     reachable="$(mktemp)"
 
     for mirror in ${mirrorlist}; do
-        parallel_http_ping ${mirror} | parallel_icmp_ping 1>>${reachable} &
+        parallel_http_ping ${mirror} | parallel_icmp_ping 1>>"${reachable}" &
     done
     wait
 
-    grep -v '^0  $' "${reachable}" | sort -n -t ' ' -k 1 | head -1 >>"${winners}"
+    grep -v '^0  $' "${reachable}" >>"${winners}"
 
     rm -f "${reachable}"
 
-    $verbose && printf "\r%$(( ( mirror_count * 2 ) + _pad + 1 ))s\r"
+    ! $debug && $verbose && printf "\r%$(( ( mirror_count * 2 ) + _pad + 1 ))s\r"
+    $debug && printf "\n%$(( ( mirror_count * 2 ) + _pad + 1 ))s\r"
 done
 ##
+
+$debug && sort -n -t ' ' -k 1 "${winners}" 
 
 set -- $(sort -n -t ' ' -k 1 "${winners}" | head -1)
 rm -f "${winners}"
@@ -361,6 +379,9 @@ output_results() {
 }
 
 v="$(source /etc/os-release; echo ${PRETTY_NAME} | cut -d ' ' -f 3)"
+
+$debug && echo "OS: ${v}"
+
 echo "${3}" | awk -v v="${v}" '
     {
         print $1 v "/main"
