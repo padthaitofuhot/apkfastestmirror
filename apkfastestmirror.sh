@@ -206,8 +206,7 @@ $(
 # Fetch mirrorlists from sources
 $verbose && echo "Fetching mirror lists"
 mirrorlist="
-${mirrors_local}
-${mirrors_unlisted}
+${mirrors_custom}
 $(
     for source in ${mirrorlist_sources}; do \
         wget -O- -q -Y ${http_use_proxy} -T ${http_timeout} ${source}; \
