@@ -367,7 +367,7 @@ echo "${3}" | awk -v v="${v}" '
         print $1 v "/community"
         print "@edge_main " $1 "edge" "/main"
         print "@edge_community " $1 "edge" "/community"
-        print "@edge_testing " $1 "edge" "/testing"
+        print "#@edge_testing " $1 "edge" "/testing"
     }
 ' | output_results
 
