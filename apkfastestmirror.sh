@@ -209,7 +209,7 @@ mirrorlist="
 ${mirrors_custom}
 $(
     for source in ${mirrorlist_sources}; do \
-        wget -O- -q -Y ${http_use_proxy} -T ${http_timeout} ${source}; \
+        wget 2>/dev/null -O- -q -Y ${http_use_proxy} -T ${http_timeout} ${source}; \
     done \
     | sort \
     | uniq \
