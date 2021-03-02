@@ -1,6 +1,6 @@
 #!/bin/ash
 ##############################################################################
-# APK Fastest Mirror 0.9.4 - A Pure BusyBox APK mirror selector for Alpine
+# APK Fastest Mirror 0.9.5 - A Pure BusyBox APK mirror selector for Alpine
 # MIT License (See: https://github.com/padthaitofuhot/apkfastestmirror)
 #
 # Usage
